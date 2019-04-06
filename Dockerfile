@@ -1,14 +1,17 @@
-FROM node:10-alpine
+FROM arm32v7/alpine
 MAINTAINER Sven Fischer <sven@leiderfischer.de>
 
 WORKDIR /src
 
+RUN apk add --update nodejs nodejs-npm
 RUN apk add --no-cache --virtual .build-deps \
   git python make g++ \
-  && apk add --no-cache openssh-client \
-  && git clone https://github.com/krishnasrinivas/wetty --branch v1.1.4 /src \
-  && npm install \
-  && apk del .build-deps \
+  && apk add --no-cache openssh-client
+RUN git clone https://github.com/krishnasrinivas/wetty --branch v1.1.4 /src
+# Install typescript on its own because it fails to install when run from a RPi
+RUN npm install --global "typescript@~3.1.1"
+RUN npm install
+RUN apk del .build-deps \
   && adduser -h /src -D term \
   && npm run-script build
 
